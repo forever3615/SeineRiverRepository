@@ -216,7 +216,7 @@ def find_sharing_fans(member_name = '冯晓菲'):
 def main2():
     share = dict()
     
-    suma = summary_by_id()
+    suma = summary_by_id
     for key in suma['冯晓菲']:
         if suma['冯晓菲'][key]['amount'] > 1000:
             print(suma['冯晓菲'][key])
@@ -224,10 +224,14 @@ def main2():
     for item in chinese_name_2:
         share.update(find_sharing_fans(item))
     
+    by_date = summary_by_date()
+    by_id = summary_by_id()
     out_to_json(path, share, 'Sharing_Fans')
+    out_to_json(path, by_date, 'Summary_by_Date')
+    out_to_json(path, by_id, 'Summary_by_ID')
 
 
-#main()
+main()
 
 time1 = time.time()
 
