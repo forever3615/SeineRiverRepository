@@ -46,14 +46,21 @@ for key in range(0, len(js_list)):
                                                'url': url}})
 
 for key in song_dict:
-    file_name = '%s_%s.flac' % (key, song_dict[key]['artist'].replace(' ','_').replace('完整版','_完整版'))
+    file_name = '%s_%s.flac' % (key, song_dict[key]['artist'].replace(' ','').replace('试听版','_试听版').replace('完整版','_完整版'))
     http = urllib3.PoolManager()
     response = http.request('GET', song_dict[key]['url'])
     try:
-        os.chdir(path + '/FXF48_B10')
+        if '完整版' in file_name:
+            os.chdir(path + '/FXF48_B10/Full_ver')
+        else:
+            os.chdir(path + '/FXF48_B10/Audit_ver')
     except FileNotFoundError:
-        os.makedirs(path + '/FXF48_B10')
-        os.chdir(path + '/FXF48_B10')
+        if '完整版' in file_name:
+            os.makedirs(path + '/FXF48_B10/Full_ver')
+            os.chdir(path + '/FXF48_B10/Full_ver')
+        else:
+            os.makedirs(path + '/FXF48_B10/Audit_ver')
+            os.chdir(path + '/FXF48_B10/Audit_ver')
     with open(file_name, 'wb') as f:
         f.write(response.data)
     response.release_conn()
