@@ -14,7 +14,8 @@ import time
 
 time0 = time.time()
 
-path = os.path.dirname(sys.argv[0])
+#path = os.path.dirname(sys.argv[0])
+path = '/Users/hanyuxu/Desktop/FXF Python/FXF48_B10'
 os.chdir(path)
 
 js = requests.get('https://raw.githubusercontent.com/fxf48/fxf48.github.io/master/js/b10list.js')
