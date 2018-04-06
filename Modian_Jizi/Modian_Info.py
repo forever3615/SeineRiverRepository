@@ -16,6 +16,7 @@ import urllib.parse
 from bs4 import BeautifulSoup
 import json
 from config import yyh_id
+from config import chinese_name
 
 time0 = time.time()
 
@@ -86,10 +87,14 @@ class ModianHandler:
         r = requests.post(api, self.make_post_params(params), headers=self.modian_header()).json()
         if int(r['status']) == 0:
             orders = r['data']
+            print('项目订单: page: %s, 已完成' % page)
             return orders
+        if int(r['status']) == 2:  # 该页没有订单
+            print('项目订单: page: %s, 数据为空' % page)
+            return []
         else:
             raise RuntimeError('获取项目订单查询失败')
-
+            
     def make_post_params(self, post_fields):
         """
         获取post请求需要的参数
@@ -209,7 +214,7 @@ def monitor_modian(update = True):
         page_num += 1
         r = modian_handler.query_project_orders(modian, page_num)
         retry_time = 0
-        while retry_time < 10:
+        while retry_time < 1:
             retry_time += 1
             if len(r) == 0:
                 r = modian_handler.query_project_orders(modian, page_num)
@@ -285,7 +290,7 @@ def out_to_json(cd, dict, file_name, sort = False):
 
 def main():
     
-    global modian_handler, modian, yyh_id
+    global modian_handler, modian, yyh_id, chinese_name
     
 #    yyh_id = {'yby':'998668',
 #              'sxr':'1078928',
@@ -297,15 +302,15 @@ def main():
 #              'cl':'1083816',
 #              'qj':'1169691'}
     
-    chinese_name = {'yby':'杨冰怡',
-                    'sxr':'宋昕冉',
-                    'lz' :'李  钊',
-                    'ws' :'汪  束',
-                    'wxj':'王晓佳',
-                    'fxf':'冯晓菲',
-                    'zds':'张丹三',
-                    'cl' :'陈  琳',
-                    'qj' :'祁  静'}
+#    chinese_name = {'yby':'杨冰怡',
+#                    'sxr':'宋昕冉',
+#                    'lz' :'李  钊',
+#                    'ws' :'汪  束',
+#                    'wxj':'王晓佳',
+#                    'fxf':'冯晓菲',
+#                    'zds':'张丹三',
+#                    'cl' :'陈  琳',
+#                    'qj' :'祁  静'}
     
     MODIAN_ARRAY = []
     team_x = {}

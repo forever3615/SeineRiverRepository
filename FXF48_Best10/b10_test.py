@@ -14,12 +14,13 @@ import time
 
 time0 = time.time()
 
-#path = os.path.dirname(sys.argv[0])
-path = '/Users/hanyuxu/Desktop/FXF Python/FXF48_B10'
+path = os.path.dirname(sys.argv[0])
+#path = '/Users/hanyuxu/Desktop/FXF Python/FXF48_B10'
 os.chdir(path)
 
 js = requests.get('https://raw.githubusercontent.com/fxf48/fxf48.github.io/master/js/b10list.js')
-
+#js = requests.get('https://github.com/fxf48/fxf48.github.io/blob/master/js/unlock.txt')
+        
 js_list = js.text.replace(' ','').replace("'", '').replace('"','').replace(',','').split('\n')
 
 song_dict = dict()
@@ -46,8 +47,7 @@ for key in range(0, len(js_list)):
                                                'artist': artist,
                                                'url': url}})
 
-for key in song_dict:
-    file_name = '%s_%s.flac' % (key, song_dict[key]['artist'].replace(' ','').replace('试听版','_试听版').replace('完整版','_完整版'))
+def download_song(file_name):    
     http = urllib3.PoolManager()
     response = http.request('GET', song_dict[key]['url'])
     try:
@@ -66,5 +66,22 @@ for key in song_dict:
         f.write(response.data)
     response.release_conn()
     print('已输出 %s ~!' % file_name)
+
+
+for key in song_dict:
+    file_name = '%s_%s.flac' % (key, song_dict[key]['artist'].replace(' ','').replace('试听版','_试听版').replace('完整版','_完整版'))
+    print(file_name.replace(' ','').replace('试听版','').replace('完整版','').replace('.flac','')[:-1])
+    if '完整版' in file_name:
+        os.chdir(path + '/FXF48_B10/Full_ver')
+        try:
+            open(file_name)
+        except FileNotFoundError:
+            download_song(file_name)
+    else:
+        os.chdir(path + '/FXF48_B10/Audit_ver')
+        try:
+            open(file_name)
+        except FileNotFoundError:
+            download_song(file_name)
 
 print('全部完成，用时 %.2f秒~' % round(time.time()-time0,2))

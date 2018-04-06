@@ -64,7 +64,7 @@ def sort_by_date(keyword):
         proj_summary.append(entities.pop(0))
         
         for item in entities:
-            pay_day = item['pay_time'][:10]
+            pay_day = item['pay_time'][:10].replace('-','')
             if pay_day in personal_daily:
                 pass
             else:
@@ -75,10 +75,11 @@ def sort_by_date(keyword):
     
 #    personal_daily = sorted(personal_daily.items(), key=lambda \
 #                            item:item[1], reverse=True)
-    
+            
+#        print(proj_summary)
     return proj_summary, personal_daily
 
-def summary_by_date():
+def summary_by_date(summary_dic):
     '''
     take no arguement
     output a dict summarized daily jizi info of all members in chinese_name list
@@ -92,8 +93,17 @@ def summary_by_date():
         if len(personal_daily) == 0:
             pass
         else:
+#            daily_summary.update({item:proj_summary})
             daily_summary.update({item:personal_daily})
     
+        total_amount = 0
+        
+        for item2 in proj_summary:
+            total_amount += item2['当前金额']
+        
+        summary_dic.update({item:{}})
+        summary_dic[item].update({'总计金额': round(total_amount,2)})
+        
     return daily_summary
 
 '''
@@ -109,12 +119,11 @@ def sort_by_id(keyword):
         personal_per_id is a dict of jizi amount by modian id
     '''
     personal_per_id = dict()
-    proj_summary = list()
     
     for proj_name in file_name(path, keyword):
     
         entities = read_json(proj_name)
-        proj_summary.append(entities.pop(0))
+        entities.pop(0)
         
         for item in entities:
             user_id = item['user_id']
@@ -131,7 +140,7 @@ def sort_by_id(keyword):
 #    personal_per_id = sorted(personal_per_id.items(), key=lambda \
 #                            item:item[1], reverse=True)
     
-    return proj_summary, personal_per_id
+    return personal_per_id
 
 def summary_by_id():
     '''
@@ -143,18 +152,18 @@ def summary_by_id():
     userid_summary = dict()
     
     for item in chinese_name_2:
-        proj_summary, personal_per_id = sort_by_id(item)
+        personal_per_id = sort_by_id(item)
         if len(personal_per_id) == 0:
             pass
         else:
             userid_summary.update({item:personal_per_id})
-    
+
     return userid_summary
 
 '''
 find shared fans
 '''
-def find_sharing_fans(member_name = '冯晓菲'):
+def find_sharing_fans(userid_summary, member_name = '冯晓菲'):
     '''
     take an arguement of member name
     return a list of her sharing fans with members in list
@@ -164,7 +173,6 @@ def find_sharing_fans(member_name = '冯晓菲'):
     
     check_list = chinese_name_2.copy()
     
-    userid_summary = summary_by_id()
     sharing_fans = dict()
 
     try:
@@ -212,29 +220,94 @@ def find_sharing_fans(member_name = '冯晓菲'):
     
     return sharing_fans
 
-
+def voting_power(userid_summary):
+    
+    v_p = dict()
+    
+    for member in userid_summary.keys():
+        print('开始分析 %s。' % member)
+        
+        v_p.update({member:{'20000~':{'0_total':0},
+                            '10000~20000':{'0_total':0},
+                            '5000~10000':{'0_total':0},
+                            '1500~5000':{'0_total':0},
+                            '1000~1500':{'0_total':0},
+                            '500~1000':{'0_total':0},
+                            '300~500':{'0_total':0},
+                            '100~300':{'0_total':0},
+                            '~100':{'0_total':0}
+                            }})
+        for userid in userid_summary[member]:
+            if int(userid_summary[member][userid]['amount']) in range(20000,999999):
+                v_p[member]['20000~']['0_total'] += 1
+                v_p[member]['20000~'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(10000,20000):
+                v_p[member]['10000~20000']['0_total'] += 1
+                v_p[member]['10000~20000'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(5000,10000):
+                v_p[member]['5000~10000']['0_total'] += 1
+                v_p[member]['5000~10000'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(1500,5000):
+                v_p[member]['1500~5000']['0_total'] += 1
+                v_p[member]['1500~5000'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(1000,1500):
+                v_p[member]['1000~1500']['0_total'] += 1
+                v_p[member]['1000~1500'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(500,1000):
+                v_p[member]['500~1000']['0_total'] += 1
+                v_p[member]['500~1000'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(300,500):
+                v_p[member]['300~500']['0_total'] += 1
+#                v_p[member]['300~500'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(100,300):
+                v_p[member]['100~300']['0_total'] += 1
+#                v_p[member]['100~300'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+            if int(userid_summary[member][userid]['amount']) in range(0,100):
+                v_p[member]['~100']['0_total'] += 1
+#                v_p[member]['~100'].update({userid_summary[member][userid]['nickname']:userid_summary[member][userid]['amount']})
+        print('完成分析 %s' % member)
+    return v_p
+                
+                
 def main2():
     share = dict()
+    summary_dic = dict()
     
-    suma = summary_by_id
-    for key in suma['冯晓菲']:
-        if suma['冯晓菲'][key]['amount'] > 1000:
-            print(suma['冯晓菲'][key])
-        
-    for item in chinese_name_2:
-        share.update(find_sharing_fans(item))
+#    suma = summary_by_id()
+#    for key in suma['冯晓菲']:
+#        if suma['冯晓菲'][key]['amount'] > 1000:
+#            print(suma['冯晓菲'][key])
     
-    by_date = summary_by_date()
+    by_date = summary_by_date(summary_dic)
     by_id = summary_by_id()
-    out_to_json(path, share, 'Sharing_Fans')
+    
     out_to_json(path, by_date, 'Summary_by_Date')
     out_to_json(path, by_id, 'Summary_by_ID')
-
-
+    
+    for item in by_id.keys():
+        summary_dic[item].update({'集资人数':len(by_id[item])})
+        summary_dic[item].update({'人均集资':round(summary_dic[item]['总计金额']/summary_dic[item]['集资人数'],2)})
+    out_to_json(path, summary_dic, 'Modian_Summary')
+    
+    for item in chinese_name_2:
+        try:
+            share.update(find_sharing_fans(by_id, item))
+        except TypeError:
+            print('无%s信息。'%(item))
+            pass
+    
+    vp = voting_power(by_id)
+  
+    out_to_json(path, share, 'Sharing_Fans')
+    out_to_json(path, vp, 'Voting_Power')
+    
 main()
 
 time1 = time.time()
 
 if __name__ == "__main__":
     main2()
+    
     print('粉丝差异度查询完成！所消耗的时间为: %.2f秒'% round((time.time() - time1),2))
+
+print('All Done~！所消耗的时间为: %.2f秒'% round((time.time() - time0),2))
